@@ -1,45 +1,28 @@
 from system.core.controller import *
 
-class Products(Controller):
+class Messages(Controller):
 	def __init__(self, action):
-		super(Products, self).__init__(action)
-		self.load_model('Product')
+		super(Messages, self).__init__(action)
+		self.load_model('Message')
+		self.load_model('Comment')
 		self.db = self._app.db
 
-	def index(self):
-		return self.load_view('index.html', products=self.models['Product'].get_products())
+	########## GET ##########
+	def delete(self, user_id, message_id):
+		self.models['Comment'].delete_comments(message_id)
+		output = self.models['Message'].delete_message(message_id)
+		for message in output['log']:
+			flash(message, 'success')
+		return redirect('/show/{}'.format(user_id))		
 
-	def new(self):
-		return self.load_view('new.html')
 
-	def edit(self, id):
-		return self.load_view('edit.html', product=self.models['Product'].get_product(id))
-
-	def show(self, id):
-		return self.load_view('show.html', product=self.models['Product'].get_product(id))
-
-	def create(self):
-		status = self.models['Product'].create_product(request.form)
-		if status['status'] == True:
-			for message in status['log']:
-				flash(message, 'success')			
-			return redirect('/')
+	########## POST ##########
+	def post(self, receiver_id):
+		output = self.models['Message'].post_message(request.form, session['id'], receiver_id)
+		if output['status'] == True:
+			for message in output['log']:
+				flash(message, 'success')
 		else:
 			for message in status['log']:
 				flash(message, 'error')
-			return redirect('/products/new')
-
-	def update(self, id):
-		status = self.models['Product'].update_product(id, request.form)
-		if status['status'] == True:
-			for message in status['log']:
-				flash(message, 'success')			
-			return redirect('/')
-		else:
-			for message in status['log']:
-				flash(message, 'error')
-			return redirect('/products/edit/{}'.format(id))
-
-	def destroy(self, id):
-		self.models['Product'].destroy_product(id)
-		return redirect('/products')
+		return redirect('/show/{}'.format(receiver_id))		

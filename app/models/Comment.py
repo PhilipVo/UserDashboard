@@ -2,80 +2,43 @@ from __future__ import print_function
 from system.core.model import Model
 import sys
 
-class Product(Model):
+class Comment(Model):
 	def __init__(self):
-		super(Product, self).__init__()
+		super(Comment, self).__init__()
 
-	def get_product(self, id):
-		data = {'id': id}
-		query = "SELECT * from products WHERE id = :id"
-		return self.db.query_db(query, data)[0]
+	def delete_comment(self, id):
+		query = "DELETE FROM comments where id = :id"
+		data = {'id' = id}
+		self.db.query_db(query, data)
+		return {'log': 'Sucessfully deleted comment.'}
 
-	def get_products(self):
-		query = "SELECT * from products"
-		return self.db.query_db(query)
+	def delete_comments(self, message_id):
+		query = "DELETE FROM comments where message_id = :message_id"
+		data = {'message_id' = message_id}
+		return self.db.query_db(query, data)
 
-	def create_product(self, data):
+	def post_comment(self, dat, user_id, receiver_id, message_id):
 		log = []
 
-		# Check for valid price:
-		try:
-			float(data['price'])
-			if len((data['price']).rsplit('.')[-1]) != 2:
-				int(data['price'])
-		except:
-			log.append('Error: please enter a valid price.')
-			return {'status': False, 'log': log}
+		if len(dat['comment']) == 0:
+			log.append('Error: a comment cannot be blank.')
+			return {'status': False, 'log': log}			
 
-		# Check for unique product name:
-		query = "SELECT name FROM products WHERE name = :name LIMIT 1"
-		if len(self.db.query_db(query, data)) > 0:
-			log.append('Error: {} already exists.'.format(data['name']))
-			return {'status': False, 'log': log}
-
-		# Insert valid entry:
-		query = """INSERT INTO products (name, description, price, created_at, updated_at)
-					VALUES (:name, :description, :price, NOW(), NOW())
+		query = """INSERT INTO comments (user_id, receiver_id, message_id, comment, created_at, updated_at)
+					VALUES (:user_id, :receiver_id, :message_id. :comment, NOW(), NOW())
 				"""
-		self.db.query_db(query, data)	
-		log.append("{} added to database.".format(data['name']))					
+		data = {	'user_id': user_id,
+					'receiver_id': receiver_id,
+					'message_id': message_id,
+					'comment': dat['comment']
+				}
+		self.db.query_db(query, data)
+		log.append('Sucessfully posted new comment.')
 		return {'status': True, 'log': log}
 
-	def update_product(self, id, dat):
-		log = []
-		data = {'id': id}
-
-		for key, value in dat.iteritems():
-			data[key] = value
-
-		# Check for valid price:
-		try:
-			float(data['price'])
-			if len((data['price']).rsplit('.')[-1]) != 2:
-				int(data['price'])
-		except:
-			log.append('Error: please enter a valid price.')
-			return {'status': False, 'log': log}
-
-		# Check for unique product name:
-		new = "SELECT name FROM products where name = :name LIMIT 1"
-		cur = "SELECT name FROM products WHERE id = :id LIMIT 1"
-		new_product = self.db.query_db(new, data)
-		cur_product = self.db.query_db(cur, data)					
-
-		if not (len(new_product) == 0 or new_product == cur_product):
-			log.append('Error: {} already exists.'.format(data['name']))
-			return {'status': False, 'log': log}
-
-		# Update with valid information:
-		query = """UPDATE products set name = :name, description = :description,
-					price = :price, updated_at = NOW() WHERE id = :id
+	def get_comments(self, receiver_id):
+		query = """SELECT * FROM comments WHERE receiver_id = :receiver_id
+					ORDER BY created_at ASC
 				"""
-		self.db.query_db(query, data)	
-		log.append("{} updated.".format(data['name']))					
-		return {'status': True, 'log': log}			
-
-	def destroy_product(self, id):
-		data = {'id': id}
-		query = "DELETE FROM products WHERE id = :id"
-		return self.db.query_db(query, data)
+		data = {'receiver_id': receiver_id}
+		return self.db.query_db(query, data)	

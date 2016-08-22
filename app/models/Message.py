@@ -2,80 +2,36 @@ from __future__ import print_function
 from system.core.model import Model
 import sys
 
-class Product(Model):
+class Message(Model):
 	def __init__(self):
-		super(Product, self).__init__()
+		super(Message, self).__init__()
 
-	def get_product(self, id):
-		data = {'id': id}
-		query = "SELECT * from products WHERE id = :id"
-		return self.db.query_db(query, data)[0]
+	def delete_message(self, id):
+		query = "DELETE FROM messages where id = :id"
+		data = {'id' = id}
+		self.db.query_db(query, data)
+		return {'log': 'Sucessfully deleted message.'}
 
-	def get_products(self):
-		query = "SELECT * from products"
-		return self.db.query_db(query)
-
-	def create_product(self, data):
+	def post_message(self, dat, user_id, receiver_id):
 		log = []
 
-		# Check for valid price:
-		try:
-			float(data['price'])
-			if len((data['price']).rsplit('.')[-1]) != 2:
-				int(data['price'])
-		except:
-			log.append('Error: please enter a valid price.')
-			return {'status': False, 'log': log}
+		if len(dat['message']) == 0:
+			log.append('Error: a message cannot be blank.')
+			return {'status': False, 'log': log}			
 
-		# Check for unique product name:
-		query = "SELECT name FROM products WHERE name = :name LIMIT 1"
-		if len(self.db.query_db(query, data)) > 0:
-			log.append('Error: {} already exists.'.format(data['name']))
-			return {'status': False, 'log': log}
-
-		# Insert valid entry:
-		query = """INSERT INTO products (name, description, price, created_at, updated_at)
-					VALUES (:name, :description, :price, NOW(), NOW())
+		query = """INSERT INTO messages (user_id, receiver_id, message, created_at, updated_at)
+					VALUES (:user_id, :receiver_id. :message, NOW(), NOW())
 				"""
-		self.db.query_db(query, data)	
-		log.append("{} added to database.".format(data['name']))					
-		return {'status': True, 'log': log}
+		data = {	'user_id': user_id,
+					'receiver_id': receiver_id,
+					'message': dat['message']
+				}
+		self.db.query_db(query, data)
+		return {'status': True, 'log': 'Sucessfully posted new message.'}
 
-	def update_product(self, id, dat):
-		log = []
-		data = {'id': id}
-
-		for key, value in dat.iteritems():
-			data[key] = value
-
-		# Check for valid price:
-		try:
-			float(data['price'])
-			if len((data['price']).rsplit('.')[-1]) != 2:
-				int(data['price'])
-		except:
-			log.append('Error: please enter a valid price.')
-			return {'status': False, 'log': log}
-
-		# Check for unique product name:
-		new = "SELECT name FROM products where name = :name LIMIT 1"
-		cur = "SELECT name FROM products WHERE id = :id LIMIT 1"
-		new_product = self.db.query_db(new, data)
-		cur_product = self.db.query_db(cur, data)					
-
-		if not (len(new_product) == 0 or new_product == cur_product):
-			log.append('Error: {} already exists.'.format(data['name']))
-			return {'status': False, 'log': log}
-
-		# Update with valid information:
-		query = """UPDATE products set name = :name, description = :description,
-					price = :price, updated_at = NOW() WHERE id = :id
+	def get_messages(self, receiver_id):
+		query = """SELECT * FROM messages WHERE receiver_id = :receiver_id
+					ORDER BY created_at DESC
 				"""
-		self.db.query_db(query, data)	
-		log.append("{} updated.".format(data['name']))					
-		return {'status': True, 'log': log}			
-
-	def destroy_product(self, id):
-		data = {'id': id}
-		query = "DELETE FROM products WHERE id = :id"
-		return self.db.query_db(query, data)
+		data = {'receiver_id': receiver_id}
+		return self.db.query_db(query, data)	
