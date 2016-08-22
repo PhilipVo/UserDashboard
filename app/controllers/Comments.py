@@ -18,8 +18,8 @@ class Comments(Controller):
 
 
 	########## POST ##########
-	def post(self, user_id, message_id):
-		output = self.models['Comment'].post_comment(request.form, session['id'], user_id, message_id)
+	def post(self, receiver_id, message_id):
+		output = self.models['Comment'].post_comment(request.form, session['id'], receiver_id, message_id)
 		if output['status'] == True:
 			for message in output['log']:
 				flash(message, 'success')

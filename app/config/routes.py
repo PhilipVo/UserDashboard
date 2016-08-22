@@ -26,4 +26,4 @@ routes['POST']['/messages/post/<int:receiver_id>'] = 'Messages#post'
 
 # Comments
 routes['GET']['/comments/delete/<int:user_id>/<int:comment_id>'] = 'Comments#delete'
-routes['POST']['/comments/post/<int:user_id>/<int:message_id>'] = 'Comments#post'
+routes['POST']['/comments/post/<int:receiver_id>/<int:message_id>'] = 'Comments#post'
