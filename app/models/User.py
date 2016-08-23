@@ -10,11 +10,11 @@ class User(Model):
 
 	def get_user(self, id):
 		data = {'id': id}
-		query = "SELECT * FROM users WHERE id = :id"
+		query = "SELECT *, DATE_FORMAT(created_at, '%b %d, %Y') AS created_date FROM users WHERE id = :id"
 		return self.db.query_db(query, data)[0]		
 
 	def get_users(self, id):
-		query = "SELECT * FROM users"
+		query = "SELECT *, DATE_FORMAT(created_at, '%b %d, %Y') AS created_date FROM users"
 		return self.db.query_db(query)		
 	
 	def remove_user(self, id):
@@ -30,9 +30,7 @@ class User(Model):
 				log.append('Login error: email/password cannot be empty.')
 				return {'status': False, 'log': log}
 
-		query = """SELECT * FROM users
-					WHERE email = :email LIMIT 1
-				"""		
+		query = "SELECT * FROM users WHERE email = :email LIMIT 1"		
 		user = self.db.query_db(query, data)
 
 		# If registered email found:
@@ -76,9 +74,7 @@ class User(Model):
 			return {'status': False, 'log': log}
 
 		# Check if the email is a new/unique entry:
-		query = """SELECT email FROM users
-					WHERE email = :email LIMIT 1
-				"""
+		query = "SELECT email FROM users WHERE email = :email LIMIT 1"
 		if len(self.db.query_db(query, data)) > 0:
 			log.append("Registration error: email already registered, please log in.")
 			return {'status': False, 'log': log}
@@ -93,13 +89,20 @@ class User(Model):
 			log.append('Registration error: password confirmation does not match.')
 			return {'status': False, 'log': log}
 
-		# All conditions met. Encrypt password and add to database:
+		# All conditions met. Encrypt password:
 		data['password'] = self.bcrypt.generate_password_hash(data['password'])
-		query = """	INSERT INTO users (first_name, last_name, email,
-					password, created_at, updated_at)
-					VALUES (:first_name, :last_name, :email, :password, NOW(), NOW())
-				"""
-		user = {'id': self.db.query_db(query, data)}
+
+		# Set user level:
+		dat = {'level': 'Normal'}
+		for key, value in data.iteritems():
+			dat[key] = value
+
+		# Add to database:
+		query = """INSERT INTO users (first_name, last_name, email,
+							password, level, created_at, updated_at)
+							VALUES (:first_name, :last_name, :email, :password, level, NOW(), NOW())
+						"""
+		user = {'id': self.db.query_db(query, dat)}
 		log.append('Thank you for registering!')
 		log.append('Please login to continue.')				
 		return {'status': True, 'log': log, 'user': user}
@@ -129,9 +132,7 @@ class User(Model):
 			return {'status': False, 'log': log}
 
 		# Check if the email is a new/unique entry:
-		query = """SELECT email FROM users
-					WHERE email = :email LIMIT 1
-				"""
+		query = "SELECT email FROM users WHERE email = :email LIMIT 1"
 		if len(self.db.query_db(query, data)) > 0:
 			log.append("Error: email already registered, please log in.")
 			return {'status': False, 'log': log}
@@ -146,13 +147,27 @@ class User(Model):
 			log.append('Error: password confirmation does not match.')
 			return {'status': False, 'log': log}
 
-		# All conditions met. Encrypt password and add to database:
+		# All conditions met. Encrypt password:
 		data['password'] = self.bcrypt.generate_password_hash(data['password'])
+
+		# Set user level:
+		query = "SELECT * FROM users LIMIT 1"
+		if len(self.db.query_db(query)) == 0:
+			level = 'Admin'		
+		else:
+			level = 'Normal'
+
+		dat = {'level': level}
+
+		for key, value in data.iteritems():
+			dat[key] = value
+
+		# Add to database:
 		query = """INSERT INTO users (first_name, last_name, email,
-					password, created_at, updated_at)
-					VALUES (:first_name, :last_name, :email, :password, NOW(), NOW())
-				"""
-		user = {'id': self.db.query_db(query, data)}
+							password, level, created_at, updated_at)
+							VALUES (:first_name, :last_name, :email, :password, level, NOW(), NOW())
+						"""
+		user = {'id': self.db.query_db(query, dat)}
 		log.append('{} {} has been added!'.format(data['first_name'], data['last_name']))
 		return {'status': True, 'log': log, 'user': user}
 
@@ -187,7 +202,7 @@ class User(Model):
 		# Update user with valid information:
 		if len(new_email) == 0 or new_email == old_email:
 			query = """UPDATE users SET first_name = :first_name, last_name = :last_name,
-						email = :email, updated_at = NOW() WHERE id = :id
+						email = :email, level = :level, updated_at = NOW() WHERE id = :id
 					"""
 			self.db.query_db(query, data)
 			log.append('Information updated for {} {}.'.format(data['first_name'], data['last_name']))

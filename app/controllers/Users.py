@@ -36,18 +36,22 @@ class Users(Controller):
 		else:		
 			return redirect('/')
 
-	def edit(self, user_id = None):
-		# Edit another user:
-		if user_id and session.get('user_level') == 'Admin':
-			return render_template('users/edit_user.html', user=self.models['User'].get_user(user_id))
-		# Edit self:
-		elif user_id == None and session.get('user_id'):
+	def edit_self(self):
+		if session.get('user_id'):
 			return render_template('users/edit_self.html', user=self.models['User'].get_user(session['user_id']))
+		else:
+			return redirect('/')
+
+	def edit_user(self, user_id):
+		if session.get('user_level') == 'Admin':
+			return render_template('users/edit_user.html', user=self.models['User'].get_user(user_id))
 		else:
 			return redirect('/')
 
 	def remove(self, user_id):
 		if session.get('user_level') == 'Admin':
+			self.models['Comment'].delete_user_comments(user_id)
+			self.models['Messages'].delete_user_messages(user_id)
 			output = self.models['User'].remove_user(user_id)			
 			for message in output['log']:
 				flash(message, 'success')

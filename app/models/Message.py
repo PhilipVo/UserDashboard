@@ -7,10 +7,15 @@ class Message(Model):
 		super(Message, self).__init__()
 
 	def delete_message(self, id):
-		query = "DELETE FROM messages where id = :id"
+		query = "DELETE FROM messages WHERE id = :id"
 		data = {'id' = id}
 		self.db.query_db(query, data)
 		return {'log': 'Sucessfully deleted message.'}
+
+	def delete_user_messages(self, user_id):
+		query = "DELETE FROM messages WHERE user_id = :user_id"
+		data = {'user_id' = user_id}
+		return self.db.query_db(query, data)		
 
 	def post_message(self, dat, user_id, receiver_id):
 		log = []
@@ -30,7 +35,8 @@ class Message(Model):
 		return {'status': True, 'log': 'Sucessfully posted new message.'}
 
 	def get_messages(self, receiver_id):
-		query = """SELECT * FROM messages WHERE receiver_id = :receiver_id
+		query = """SELECT *, CONCAT(first_name, ' ', last_name) AS name
+					FROM messages WHERE receiver_id = :receiver_id
 					ORDER BY created_at DESC
 				"""
 		data = {'receiver_id': receiver_id}

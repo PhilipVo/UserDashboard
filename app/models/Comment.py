@@ -12,10 +12,15 @@ class Comment(Model):
 		self.db.query_db(query, data)
 		return {'log': 'Sucessfully deleted comment.'}
 
-	def delete_comments(self, message_id):
+	def delete_message_comments(self, message_id):
 		query = "DELETE FROM comments where message_id = :message_id"
 		data = {'message_id' = message_id}
 		return self.db.query_db(query, data)
+
+	def delete_user_comments(self, user_id):
+		query = "DELETE FROM comments where user_id = :user_id"
+		data = {'user_id' = user_id}
+		return self.db.query_db(query, data)		
 
 	def post_comment(self, dat, user_id, receiver_id, message_id):
 		log = []
@@ -37,7 +42,8 @@ class Comment(Model):
 		return {'status': True, 'log': log}
 
 	def get_comments(self, receiver_id):
-		query = """SELECT * FROM comments WHERE receiver_id = :receiver_id
+		query = """SELECT *, CONCAT(first_name, ' ', last_name) as name
+					FROM comments WHERE receiver_id = :receiver_id
 					ORDER BY created_at ASC
 				"""
 		data = {'receiver_id': receiver_id}

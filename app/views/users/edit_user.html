@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="description" content="Pylot Dashboard Demo">
+	<title>Pylot Dashboard</title>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+	<!-- Optional theme -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+	<!-- Latest compiled and minified JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+</head>
+<body>
+	<nav class="navbar navbar-default">
+		<div class="container-fluid">
+			<!-- Brand and toggle get grouped for better mobile display -->
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+					<span class="sr-only">Toggle navigation</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="/">Pylot Dashboard</a>
+			</div>
+
+			<!-- Collect the nav links, forms, and other content for toggling -->
+			<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+				<ul class="nav navbar-nav">
+					<li><a href="/">Dashboard</a></li>
+					<li><a href="/users/edit">Profile</a></li>
+					<li class="dropdown">
+						<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Menu<span class="caret"></span></a>
+						<ul class="dropdown-menu">
+							<li><a href="/users/edit">Edit profile</a></li>
+							<li><a href="/users/show/{{session['user_id']}}">View messages</a></li>
+							<li role="separator" class="divider"></li>
+							<li><a href="/logout">Logout</a></li>
+						</ul>
+					</li>
+				</ul>
+				<form class="navbar-form navbar-left">
+					<div class="form-group">
+						<input type="text" class="form-control" placeholder="Search">
+					</div>
+					<button type="submit" class="btn btn-default">Submit</button>
+				</form>
+				<ul class="nav navbar-nav navbar-right">
+					<li><a href="/logout">Logout</a></li>
+				</ul>
+			</div><!-- /.navbar-collapse -->
+		</div><!-- /.container-fluid -->
+	</nav>
+
+	<div class='container'>
+		<a href="/"><button class="btn btn-default pull-right">Return to Dashboard</button></a>
+		<h4>Edit user #{{user['id']}}</h4><br>
+		<div class='col-sm-6'>
+			<form action="/users/edit_info/{{user['id']}}" method="POST" style="border:solid 2px black;padding:10px;">			
+				<b>Edit Information:</b><br><br>
+				Email Address:<br>
+				<input type="text" name="email" value="{{user['email']}}"><br>
+				First Name:<br>
+				<input type="text" name="first_name" value="{{user['first_name']}}"><br>
+				Last Name:<br>
+				<input type="text" name="last_name" value="{{user['last_name']}}"><br><br>
+				User Level:<br>
+				<select name="level">
+					<option value="Admin" {% if {{user['level']}}=='Admin' %} selected="selected" {% endif %}>
+						Admin
+					</option>				
+					<option value="Normal" {% if {{user['level']}}=='Normal' %} selected="selected" {% endif %}>
+						Normal
+					</option>
+				</select><br><br>
+				<input type="submit" value="Save">
+			</form>
+			<br>
+		</div>
+		<div class='col-sm-6'>
+			<form action="/users/edit_password/{{user['id']}}" method="POST" style="border:solid 2px black;padding:10px;">
+				<b>Change Password:</b><br><br>
+				Password:<br>
+				<input type="password" name="password"><br>
+				Password Confirmation:<br>
+				<input type="password" name="password_confirmation"><br><br>
+				<input type="submit" value="Update Password">
+			</form>
+			<br>
+		</div>
+		<br>
+	</div> <!-- end of container -->
+
+
+</body>
+</html>

@@ -1,8 +1,5 @@
 from system.core.controller import *
 
-routes['GET']['/comments/delete/<int:user_id>/<int:comment_id>'] = 'Comments#delete'
-routes['POST']['/comments/post/<int:message_id>'] = 'Comments#post'
-
 class Comments(Controller):
 	def __init__(self, action):
 		super(Comments, self).__init__(action)

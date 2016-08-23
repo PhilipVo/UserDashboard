@@ -9,7 +9,7 @@ class Messages(Controller):
 
 	########## GET ##########
 	def delete(self, user_id, message_id):
-		self.models['Comment'].delete_comments(message_id)
+		self.models['Comment'].delete_message_comments(message_id)
 		output = self.models['Message'].delete_message(message_id)
 		for message in output['log']:
 			flash(message, 'success')
