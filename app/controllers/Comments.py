@@ -11,16 +11,16 @@ class Comments(Controller):
 		output = self.models['Comment'].delete_comment(comment_id)
 		for message in output['log']:
 			flash(message, 'success')
-		return redirect('/show/{}'.format(user_id))
+		return redirect('/users/show/{}'.format(user_id))
 
 
 	########## POST ##########
 	def post(self, receiver_id, message_id):
-		output = self.models['Comment'].post_comment(request.form, session['id'], receiver_id, message_id)
+		output = self.models['Comment'].post_comment(request.form, session['user_id'], receiver_id, message_id)
 		if output['status'] == True:
 			for message in output['log']:
 				flash(message, 'success')
 		else:
 			for message in status['log']:
 				flash(message, 'error')
-		return redirect('/show/{}'.format(user_id))
+		return redirect('/users/show/{}'.format(receiver_id))

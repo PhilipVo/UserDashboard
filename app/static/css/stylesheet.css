@@ -1,11 +1,14 @@
+.messages, .comment {
+	overflow-y: auto;
+	width: 100%;
+}
+
 .messages {
 	height: 100px;
-	overflow-y: auto;
 }
 
 .comment {
 	height: 80px;
-	overflow-y: auto;
 }
 
 .delete_message {
@@ -15,11 +18,40 @@
 	border: solid 1px red;
 	background-color: transparent;
 	font-size:11px;	
+	display: inline-block;
 }
 
 .delete_comment {
 	color: red;
-	font-size:10px;
-	text-align: top;
-	text-decoration: none;
+	padding: 3px;
+	margin-bottom: 2px;
+	border: solid 1px transparent;
+	background-color: transparent;
+	font-size:10px;	
+	display: inline-block;
+}
+
+.flash {
+	width: 300px;
+	position: absolute;
+	margin: 0px auto;
+	top: 75px;
+	left: 0;
+	right: 0;
+}
+
+.error, .success {
+	padding: 5px;
+	border: solid 2px black;
+	text-align: center;
+}
+
+.error {
+	color: white;	
+	background-color: red;
+}
+
+.success {
+	color: green;	
+	background-color: lightgreen;
 }

@@ -10,17 +10,18 @@ class User(Model):
 
 	def get_user(self, id):
 		data = {'id': id}
-		query = "SELECT *, DATE_FORMAT(created_at, '%b %d, %Y') AS created_date FROM users WHERE id = :id"
+		query = "SELECT *, DATE_FORMAT(created_at, '%b %d, %Y') AS user_date FROM users WHERE id = :id"
 		return self.db.query_db(query, data)[0]		
 
-	def get_users(self, id):
-		query = "SELECT *, DATE_FORMAT(created_at, '%b %d, %Y') AS created_date FROM users"
+	def get_users(self):
+		query = "SELECT *, DATE_FORMAT(created_at, '%b %d, %Y') AS user_date FROM users"
 		return self.db.query_db(query)		
 	
 	def remove_user(self, id):
 		query = "DELETE FROM users WHERE id = :id"
 		data = {'id': id}
-		return self.db.query_db(query, data)	
+		self.db.query_db(query, data)		
+		return {'log': ['Successfully removed user.']}
 
 	def signin_user(self, data):
 		log = []
@@ -85,26 +86,31 @@ class User(Model):
 			return {'status': False, 'log': log}
 
 		# Check if the password matches the confirmation:
-		if data['password'] != data['confirm_password']:
+		if data['password'] != data['password_confirmation']:
 			log.append('Registration error: password confirmation does not match.')
 			return {'status': False, 'log': log}
 
-		# All conditions met. Encrypt password:
-		data['password'] = self.bcrypt.generate_password_hash(data['password'])
-
 		# Set user level:
-		dat = {'level': 'Normal'}
+		query = "SELECT * FROM users LIMIT 1"
+		if len(self.db.query_db(query)) == 0:
+			level = 'Admin'		
+		else:
+			level = 'Normal'
+
+		dat = {'level': level}
 		for key, value in data.iteritems():
 			dat[key] = value
 
+		# All conditions met. Encrypt password:
+		dat['password'] = self.bcrypt.generate_password_hash(dat['password'])
+		print(dat, file=sys.stderr)
 		# Add to database:
 		query = """INSERT INTO users (first_name, last_name, email,
 							password, level, created_at, updated_at)
-							VALUES (:first_name, :last_name, :email, :password, level, NOW(), NOW())
+							VALUES (:first_name, :last_name, :email, :password, :level, NOW(), NOW())
 						"""
 		user = {'id': self.db.query_db(query, dat)}
-		log.append('Thank you for registering!')
-		log.append('Please login to continue.')				
+		log.append('Thank you for registering! Please login to continue.')				
 		return {'status': True, 'log': log, 'user': user}
 
 	def new_user(self, data):
@@ -143,29 +149,23 @@ class User(Model):
 			return {'status': False, 'log': log}
 
 		# Check if the password matches the confirmation:
-		if data['password'] != data['confirm_password']:
+		if data['password'] != data['password_confirmation']:
 			log.append('Error: password confirmation does not match.')
 			return {'status': False, 'log': log}
 
-		# All conditions met. Encrypt password:
-		data['password'] = self.bcrypt.generate_password_hash(data['password'])
-
 		# Set user level:
-		query = "SELECT * FROM users LIMIT 1"
-		if len(self.db.query_db(query)) == 0:
-			level = 'Admin'		
-		else:
-			level = 'Normal'
-
-		dat = {'level': level}
+		dat = {'level': 'Normal'}
 
 		for key, value in data.iteritems():
 			dat[key] = value
 
+		# All conditions met. Encrypt password:
+		dat['password'] = self.bcrypt.generate_password_hash(dat['password'])
+
 		# Add to database:
 		query = """INSERT INTO users (first_name, last_name, email,
 							password, level, created_at, updated_at)
-							VALUES (:first_name, :last_name, :email, :password, level, NOW(), NOW())
+							VALUES (:first_name, :last_name, :email, :password, :level, NOW(), NOW())
 						"""
 		user = {'id': self.db.query_db(query, dat)}
 		log.append('{} {} has been added!'.format(data['first_name'], data['last_name']))
@@ -211,7 +211,7 @@ class User(Model):
 			log.append('Error: email already in use.')
 			return {'status': False, 'log': log}
 
-	def edit_password(self, data, id):
+	def edit_password(self, dat, id):
 		log = []
 		data = {'id': id}
 
@@ -224,7 +224,7 @@ class User(Model):
 			return {'status': False, 'log': log}
 
 		# Check if the password matches the confirmation:
-		if data['password'] != data['confirm_password']:
+		if data['password'] != data['password_confirmation']:
 			log.append('Error: password confirmation does not match.')
 			return {'status': False, 'log': log}
 
@@ -234,7 +234,7 @@ class User(Model):
 		log.append('Password updated.')
 		return {'status': True, 'log': log}	
 
-	def edit_description(self, data, id):
+	def edit_description(self, dat, id):
 		log = []
 		data = {'id': id}
 

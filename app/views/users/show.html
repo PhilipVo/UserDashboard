@@ -22,15 +22,12 @@
 		$(document).ready(function() {
 
 			$('.comments').hide();
-			$('#wall_flash').fadeOut(5000);
+			$('.flash').fadeOut(5000);
 
 			$('.messages').click(function() {
-					// $(window).scrollTo(this);					
-					$(this).next().toggle();
-					// $(this).next().find('textarea').focus();
-					console.log('clicked')
+					$(this).parent().next().next().toggle();
+			})
 
-				})
 		});		
 	</script>	
 
@@ -77,67 +74,85 @@
 		</div><!-- /.container-fluid -->
 	</nav>
 
+	<div class='flash'>
+		{% with messages = get_flashed_messages(with_categories=true) %}
+			{% if messages %}
+				{% for category, message in messages %}
+					<p class="{{category}}">{{message}}</p>
+				{% endfor %}
+			{% endif %}
+		{% endwith %}
+	</div>
+
 	<div class='container' style="margin-bottom:50px">
 		<h4>{{user['first_name']}} {{user['last_name']}}</h4>
 		<table>
 			<tr>
 				<th>Registered at:</th>
-				<td>{{user['created_date']}}</td>
+				<td style="padding-left:10px">{{user['user_date']}}</td>
 			</tr>
 			<tr>
 				<th>User ID:</th>
-				<td>#{{user['id']}}</td>
+				<td style="padding-left:10px">#{{user['id']}}</td>
 			</tr>
 			<tr>
 				<th>Email address:</th>
-				<td>{{user['email']}}</td>
+				<td style="padding-left:10px">{{user['email']}}</td>
 			</tr>
 			<tr>
 				<th>Description:</th>
-				<td>{{user['description']}}</td>
+				<td style="padding-left:10px">{% if user['description'] %}{{user['description']}}{% endif %}</td>
 			</tr>
 		</table>
 		<br>
 		<form action="/messages/post/{{user['id']}}" method="POST">
-			<h4>Leave a message for {{{user['first_name']}}</h4>
-			<textarea style="width:100%;height:100px;" name="message"></textarea><br><br>
-			<input class="lightblue pull-right" type="submit" value="Post message">
+			<h4>Leave a message for {{user['first_name']}}</h4>
+			<textarea style="width:100%;height:100px;" name="message"></textarea><br>
+			<input class="pull-right" type="submit" value="Post message">
 		</form>
-
 		<br><br><br>
-		{% for message in messages %}
-			{% if message['user_id'] == session['user_id'] %}
-				<p>{{message['name']}} wrote:</p>
-			{% else %}
-				<a href="/users/show/{{message['user_id']}}">{{message['name']}}</a> wrote
-			{% endif %}
-			{% if message['user_id'] == session['user_id'] or session['user_level'] == 'Admin' %}
-				<a href="/messages/delete/{{user['id']}}/{{message['message_id']}}"><button class="delete_message pull-right">Delete post</button></a>
-			{% endif %}			
-			<textarea class='col-sm-12 messages' readonly>{{message['messsage']}}</textarea>
 
-			<div class=".comments">
+		{% for message in messages %}
+			<div class="col-sm-12" style="margin-bottom:10px;">
+				<br><br>
+				{% if message['user_id'] == session['user_id'] %}
+					<p style="display:inline-block"><b>{{message['name']}}</b></p>
+				{% else %}
+					<a style="display:inline-block" href="/users/show/{{message['user_id']}}"><b>{{message['name']}}</b></a>
+				{% endif %}
+				<p style="display:inline-block"> - {{message['message_date']}}</p>				
+				{% if message['user_id'] == session['user_id'] or session['user_level'] == 'Admin' %}
+					<form style="display:inline-block" class="pull-right" action="/messages/delete/{{user['id']}}/{{message['id']}}" method="POST">
+						<input class="delete_message" type="submit" value="Delete post">
+					</form>
+				{% endif %}
+				<textarea class="messages" readonly>{{message['message']}}</textarea>
+			</div>
+
+			<div class="col-sm-1"></div>			
+			<div class="col-sm-11 comments">
 				{% for comment in comments %}
 					{% if comment['message_id'] == message['id'] %}
 						{% if comment['user_id'] == session['user_id'] %}
-							<p>{{comment['name']}} commented:</p>
+							<p style="display:inline-block"><b>{{comment['name']}}</b></p>
 						{% else %}
-							<a href="/users/show/{{comment['user_id']}}">{{comment['name']}}</a> commented:
+							<a style="display:inline-block" href="/users/show/{{comment['user_id']}}"><b>{{comment['name']}}</b></a>
 						{% endif %}
+						<p style="display:inline-block"> - {{comment['comment_date']}}</p>
 						{% if comment['user_id'] == session['user_id'] or session['user_level'] == 'Admin' %}
-							<a href="/comments/delete/{{user['id']}}/{{comment['comment_id']}}"" class="delete_comment pull-right">Delete comment</a>
+							<form style="display:inline-block" class="pull-right" action="/comments/delete/{{user['id']}}/{{comment['id']}}" method="POST">
+								<input class="delete_comment" type="submit" value="Delete Comment">
+							</form>
 						{% endif %}								
-						<textarea class='col-sm-11 pull-right comment' readonly>{{comment['comment']}}</textarea><br><br>
+						<textarea class="comment" readonly>{{comment['comment']}}</textarea><br><br>
 					{% endif %}
-					<form action="/comments/post/{{user['id']}}/{{message['message_id']}}" method="POST">
-						<textarea class="col-sm-11 pull-right comment" name="comment" autofocus="autofocus" placeholder="write a comment..."></textarea><br><br>
-						<input class="lightblue pull-right" type="submit" value="Post comment">
-					</form>			
 				{% endfor %}
+				<form style="display:inline-block;width:100%;" class="pull-right" action="/comments/post/{{user['id']}}/{{message['id']}}" method="POST">
+					<textarea class="comment" name="comment" placeholder="write a comment..."></textarea>
+					<input class="pull-right" type="submit" value="Post comment"><br><br>
+				</form>
 			</div>
-
 		{% endfor %}
-
 	</div> <!-- end of container -->
 
 

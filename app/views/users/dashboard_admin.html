@@ -7,6 +7,8 @@
 
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 
+	<link rel="stylesheet" type="text/css" href="../../static/css/stylesheet.css">
+
 	<!-- Latest compiled and minified CSS -->
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 
@@ -23,6 +25,10 @@
 				return true;
 			return false;
 		}
+
+		$(document).ready(function() {
+			$('.flash').fadeOut(5000);
+		});	
 		
 	</script>
 
@@ -69,8 +75,18 @@
 		</div><!-- /.container-fluid -->
 	</nav>
 
+	<div class='flash'>
+		{% with messages = get_flashed_messages(with_categories=true) %}
+			{% if messages %}
+				{% for category, message in messages %}
+					<p class="{{category}}">{{message}}</p>
+				{% endfor %}
+			{% endif %}
+		{% endwith %}
+	</div>			
+
 	<div class='container'>
-		<a href="/dashboard/admin"><button class="btn btn-default pull-right">Add User</button></a>
+		<a href="/users/new"><button class="btn btn-default pull-right">Add User</button></a>
 		<div style="margin-bottom:50px"></div>
 		<div class="panel panel-default">
 			<!-- Default panel contents -->
@@ -98,7 +114,7 @@
 								</a>
 							</td>
 							<td>{{user['email']}}</td>
-							<td>{{user['created_date']}}</td>
+							<td>{{user['user_date']}}</td>
 							<td>{{user['level']}}</td>
 							<td><a href="/users/edit/{{user['id']}}">Edit</a> |
 								<a onclick="return confirmRemove()" href="/users/remove/{{user['id']}}">Remove</a>
